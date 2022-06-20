@@ -84,4 +84,20 @@ h2 {
     border: none;
 }
 
+.answer-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+}
+
+.answer-choice {
+    padding: 14px 17px;
+    background: #4b9cd3;
+    color: #222;
+    font-size: 17px;
+    margin: 14px 0;
+    text-align: left;
+    font-weight: bolder;
+}
+
 /* END MAIN PAGE STYLING */
