@@ -23,11 +23,29 @@ var quiz = [
                     "3. answer choice 2",
                     "4. answer choice 3"    ],
         answer: 0
+      },
+      {
+        question: "The correct answer to this question is answer choice 4",
+        choices: [  "1. answer choice 0",
+                    "2. answer choice 1",
+                    "3. answer choice 2",
+                    "4. the correct answer"    ],
+        answer: 3
+      },
+      {
+        question: "The correct answer to this question is answer choice 3 (2 of these)",
+        choices: [  "1. answer choice 0",
+                    "2. answer choice 1",
+                    "3. the correct answer",
+                    "4. answer choice 3"    ],
+        answer: 2
       }
 ];
 
 // array to store order of questions in quiz
-var questionOrder = []
+var questionOrder = [];
+// array to keep track of questions that have been asked
+var quizAnswered = [];
 
 // add event listener to start button (bottom of page)
 
@@ -56,29 +74,42 @@ var startButtonElement = document.getElementById("start-btn");
 var questionContentElement = document.getElementById("question-content");
 var questionTextElement = document.getElementById("question-text");
 
-var currentQuestion = 0;
+
+
+
+
+var endQuiz = function() {
+
+}
+
 
 
 
 // load every question after first one
 var loadNextQuestion = function() {
-    // check for lingering pop-up
-    if (document.getElementById("pop-up")) {
-        document.getElementById("pop-up").remove()
-    };
-
     // check previous answer before loading next question
-    if (event.target.dataset.choice == quiz[currentQuestion].answer) {
+    if (event.target.dataset.choice == quiz[questionOrder[0]].answer) {
         var gotItRight = true;
     } else {
         var gotItRight = false;
     };
     
-    // load next question
-    currentQuestion = currentQuestion + 1;
+    // check for remaining questions
+    quizAnswered.push(questionOrder[0]);
+    questionOrder.splice(0,1);
+
+    if (quizAnswered.length === quiz.length) {
+        endQuiz();
+        return false;
+    }
+
+    // check for lingering pop-up
+    if (document.getElementById("pop-up")) {
+        document.getElementById("pop-up").remove()
+    };
 
     // change question text to new question
-    questionTextElement.innerText = quiz[currentQuestion].question;
+    questionTextElement.innerText = quiz[questionOrder[0]].question;
 
     // remove previous question answer choices
     document.getElementById("answer-list").remove();
@@ -104,35 +135,36 @@ var loadNextQuestion = function() {
         popUpFeedback.setAttribute("id","pop-up");
         popUpFeedback.innerHTML = "<p class='incorrect'>That's incorrect! Time deducted.</p>";
         document.getElementById("question-block").appendChild(popUpFeedback);
+
+        // deduct time
     };
 
-    // add answer choices
-    for (i=0; i < quiz[currentQuestion].choices.length; i++) {
+    // add new answer choices
+    for (i=0; i < quiz[questionOrder[0]].choices.length; i++) {
         // for each choice, add the button and assign a data-choice attribute
         var answerChoiceButton = document.createElement("button");
         answerChoiceButton.className = "answer-choice";
         answerChoiceButton.setAttribute("data-choice", i);
-        answerChoiceButton.innerText = quiz[currentQuestion].choices[i];
+        answerChoiceButton.innerText = quiz[questionOrder[0]].choices[i];
         answerListElement.appendChild(answerChoiceButton);
     };
 
     // remove pop-up after X seconds
     //setTimeout(document.getElementById("pop-up").remove(), 5000);
 
-    // get chosen answer
+    // start function over when a new answer is chosen
     document.getElementById("answer-list").addEventListener("click", loadNextQuestion);
-
 };
 
 
-// load a new question
+// load the first question after Start Game is clicked
 var loadFirstQuestion = function() {    
     // remove instructions and start button
     startButtonElement.remove();
     questionContentElement.remove();
     
     // change heading text to question text
-    questionTextElement.innerText = quiz[currentQuestion].question;
+    questionTextElement.innerText = quiz[questionOrder[0]].question;
 
     // add answer list element
     var answerListElement = document.createElement("div");
@@ -142,12 +174,12 @@ var loadFirstQuestion = function() {
 
 
     // add answer choices
-    for (i=0; i < quiz[currentQuestion].choices.length; i++) {
+    for (i=0; i < quiz[questionOrder[0]].choices.length; i++) {
         // for each choice, add the button and assign a data-choice attribute
         var answerChoiceButton = document.createElement("button");
         answerChoiceButton.className = "answer-choice";
         answerChoiceButton.setAttribute("data-choice", i);
-        answerChoiceButton.innerText = quiz[currentQuestion].choices[i];
+        answerChoiceButton.innerText = quiz[questionOrder[0]].choices[i];
         answerListElement.appendChild(answerChoiceButton);
     };
 
@@ -155,13 +187,46 @@ var loadFirstQuestion = function() {
     document.getElementById("answer-list").addEventListener("click", loadNextQuestion);
 };
 
+
+
+
+
+
 // start game
 var takeQuiz = function() {
+    // determine question order
+    var questionNums = []
+    // store each question number as a string in a temporary array
+    for (i=0; i < quiz.length; i++) {
+        questionNums.push(i.toString());
+    };
+    // create a random order of question numbers in the question order array
+    while (questionNums.length !== 0) {
+        indexNum = Math.floor(Math.random() * questionNums.length);
+        questionOrder.push(questionNums[indexNum]);
+        questionNums.splice(indexNum,1);
+    };
+    // convert question numbers from string to number in order array
+    for (i=0; i < questionOrder.length; i++) {
+        questionOrder[i] = parseInt(questionOrder[i]);
+    };
 
+    loadFirstQuestion();
+
+
+
+
+
+
+
+    
 }
 
 
 
+
+
+
 // start game when Start Quiz button is clicked
-startButtonElement.addEventListener("click", loadFirstQuestion);
+startButtonElement.addEventListener("click", takeQuiz);
 
