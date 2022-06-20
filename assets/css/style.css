@@ -37,7 +37,7 @@ header h1 {
     font-size: 18px;
 }
 
-.high-score-btn:hover {
+.high-score-btn:hover, .start-btn:hover, .answer-choice:hover {
     background: orangered;
 }
 
@@ -75,10 +75,12 @@ h2 {
     padding: 10px;
 }
 
-.start-btn {
+.start-btn, .answer-choice {
     margin: 20px;
     padding: 6px 12px;
+    color: #222;
     font-size: 17px;
+    font-weight: bolder;
     background: #4b9cd3;
     outline: none;
     border: none;
@@ -92,12 +94,26 @@ h2 {
 
 .answer-choice {
     padding: 14px 17px;
-    background: #4b9cd3;
-    color: #222;
-    font-size: 17px;
     margin: 14px 0;
     text-align: left;
+}
+
+/* START POP-UP STYLING */
+
+.pop-up {
+    margin-top: 20px;
+    font-style: italic;
     font-weight: bolder;
 }
+
+.correct {
+    color: #c4d600;
+}
+
+.incorrect {
+    color: orangered;
+}
+
+/* END POP-UP STYLING */
 
 /* END MAIN PAGE STYLING */
