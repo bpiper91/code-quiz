@@ -47,6 +47,9 @@ var questionOrder = [];
 // array to keep track of questions that have been asked
 var quizAnswered = [];
 
+
+
+
 // add event listener to start button (bottom of page)
 
 // load first question and start timer
@@ -73,14 +76,145 @@ var quizAnswered = [];
 var startButtonElement = document.getElementById("start-btn");
 var questionContentElement = document.getElementById("question-content");
 var questionTextElement = document.getElementById("question-text");
+var score = 0;
+var timeRemaining = 1;
 
 
+// view high scores
+var leaderboard = function() {
+    // switch to leaderboard page content
+    questionTextElement.innerText = "High Scores";
+    document.getElementById("save-initials").removeEventListener("click", storeScore);
+    document.getElementById("discard-score").removeEventListener("click", leaderboard);
+    questionContentElement.remove();
 
+    // create new question-content div
+    var newDivElement = document.createElement("div");
+    newDivElement.setAttribute("id","question-content");;
+    
+    // get high scores from localStorage and add to page
+    if (!localStorage.getItem("highScores")) {
+        newDivElement.innerText = "There are no high scores to display.";
+    } else {
+        var newUnordList = document.createElement("ul");
+        newUnordList.className = "high-scores";
+        
+        var highScores = localStorage.getItem("highScores");
+        highScores = JSON.parse(highScores);
+
+        for (i=0; i < highScores.length; i++) {
+            var newListItem = document.createElement("li");
+            newListItem.className = "high-score";
+            newListItem.innerText = (i + 1) + ". " + highScores[i].score + " - " + highScores[i].initials;
+            newUnordList.appendChild(newListItem);
+        }
+        // append list to question content div
+        newDivElement.appendChild(newUnordList);
+    };
+    
+    // append question content div to question block div
+    document.getElementById("question-block").appendChild(newDivElement);
+
+    var startOverButton = document.createElement("button");
+    startOverButton.className = "start-btn";
+    startOverButton.setAttribute("id","start-btn");
+    startOverButton.innerText = "Start Quiz";
+    document.getElementById("question-block").appendChild(startOverButton);
+
+    // add new listener for start over button
+    startButtonElement.addEventListener("click", takeQuiz);
+}
+
+// store saved score and initials and then go to leaderboard
+var storeScore = function(finalScore, name) {
+    // if there's no stored high scores in localStorage, create an object and store it
+    if (!localStorage.getItem("highScores")) {
+        
+        var highScores = [ {
+                        score: finalScore,
+                        initials: name
+                        } ];
+
+        localStorage.setItem("highScores", JSON.stringify(highScores));
+
+    } else {
+        // if there are stored scores, pull them from localStorage
+        var highScores = localStorage.getItem("highScores");
+        highScores = JSON.parse(highScores);
+
+        // add current score to the array and save only the top 5
+        var myScore = {
+                        score: finalScore,
+                        initials: name
+                        };
+        
+        highScores.push(myScore);
+
+        if (highScores.length > 5) {
+            highScores = highScores.score.sort(function(a , b) {return a - b}).slice(highScores.length - 1, highScores.length - 5);
+        };
+
+        localStorage.setItem("highScores", JSON.stringify(highScores));
+
+        leaderboard();
+    };
+}
 
 
 var endQuiz = function() {
+    // get score
+    var totalScore = score + timeRemaining;
 
-}
+    // clear question elements
+    if (document.getElementById("pop-up")) {
+        document.getElementById("pop-up").remove();
+    };
+
+    document.getElementById("answer-list").removeEventListener("click", loadNextQuestion);
+    document.getElementById("answer-list").remove();
+
+    // change heading text
+    questionTextElement.innerText = "All done!"
+
+    // create question content div
+    var newDivElement = document.createElement("div");
+    newDivElement.setAttribute("id","question-content");
+    newDivElement.innerHTML = "<p>You answered " + score + " correctly with " + timeRemaining + " seconds remaining, for a score of " + totalScore + ".</p>"
+
+    // add input and buttons for saving score and initials    
+    var newLabelElement = document.createElement("label");
+    newLabelElement.setAttribute("for","initials-input");
+    newLabelElement.innerText = "Enter your initials to save your score";
+    newDivElement.appendChild(newLabelElement);
+
+    var newInputElement = document.createElement("input");
+    newInputElement.setAttribute("type","text");
+    newInputElement.setAttribute("name","initials-input");
+    newInputElement.setAttribute("id","initials-input");
+    newInputElement.setAttribute("placeholder","Enter your initials");
+    newDivElement.appendChild(newInputElement);
+
+    var saveScoreButton = document.createElement("button");
+    saveScoreButton.className = "score-btn";
+    saveScoreButton.setAttribute("id","save-initials");
+    saveScoreButton.innerText = "Save Score";
+    newDivElement.appendChild(saveScoreButton);
+
+    var discardScoreButton = document.createElement("button");
+    discardScoreButton.className = "score-btn";
+    discardScoreButton.setAttribute("id","discard-score");
+    discardScoreButton.innerText = "Discard Score";
+    newDivElement.appendChild(discardScoreButton);
+
+    // add question content div
+    document.getElementById("question-block").appendChild(newDivElement);
+
+    // add event listener for both buttons
+    document.getElementById("save-initials").addEventListener("click", storeScore(totalScore, document.getElementById("initials-input").value));
+    document.getElementById("discard-score").addEventListener("click", leaderboard);
+};
+
+
 
 
 
@@ -128,6 +262,9 @@ var loadNextQuestion = function() {
         popUpFeedback.setAttribute("id","pop-up");
         popUpFeedback.innerHTML = "<p class='correct'>That's correct! Keep it up!</p>";
         document.getElementById("question-block").appendChild(popUpFeedback);
+
+        // add to score
+        score = score + 1;
     } else {
         // create pop-up for incorrect answer and add to question block div
         var popUpFeedback = document.createElement("div");
@@ -159,6 +296,9 @@ var loadNextQuestion = function() {
 
 // load the first question after Start Game is clicked
 var loadFirstQuestion = function() {    
+    // remove start button event listener
+    startButtonElement.removeEventListener("click", takeQuiz);
+    
     // remove instructions and start button
     startButtonElement.remove();
     questionContentElement.remove();
@@ -171,7 +311,6 @@ var loadFirstQuestion = function() {
     answerListElement.className = "answer-list";
     answerListElement.setAttribute("id","answer-list");
     document.getElementById("question-block").appendChild(answerListElement);
-
 
     // add answer choices
     for (i=0; i < quiz[questionOrder[0]].choices.length; i++) {
@@ -195,7 +334,8 @@ var loadFirstQuestion = function() {
 // start game
 var takeQuiz = function() {
     // determine question order
-    var questionNums = []
+    var questionNums = [];
+    questionOrder = [];
     // store each question number as a string in a temporary array
     for (i=0; i < quiz.length; i++) {
         questionNums.push(i.toString());
@@ -220,7 +360,7 @@ var takeQuiz = function() {
 
 
     
-}
+};
 
 
 
