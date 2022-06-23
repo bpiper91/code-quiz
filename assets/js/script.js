@@ -72,17 +72,33 @@ var quizAnswered = [];
 
 
 
+// points for correct answer
+var correctAnswerValue = 5;
+// starting time limit for finishing quiz
+var timeLimit = 60;
+// penalty for wrong answer (seconds)
+var penalty = 15;
+// amount of time a pop-up stays on screen (seconds)
+var popUpTime = 0.8
+
 var highScoreButton = document.querySelector(".high-score-btn");
 var startButtonElement = document.getElementById("start-btn");
 var questionContentElement = document.querySelector("#question-content");
 var questionTextElement = document.getElementById("question-text");
 var score = 0;
-var timeRemaining = 1;
+var timeRemaining = timeLimit;
 var totalScore = 0;
+var countdown;
+
+
+
 
 
 // view high scores
 var leaderboard = function() {
+    // clear timer
+    clearInterval(countdown);
+
     // switch to leaderboard page content
     questionTextElement.innerText = "High Scores";
 
@@ -146,7 +162,7 @@ var leaderboard = function() {
 // store saved score and initials and then go to leaderboard
 var storeScore = function() {
     var playerInitials = document.querySelector("#initials-input").value;
-    debugger;
+
     // if there's no stored high scores in localStorage, create an object and store it
     if (!localStorage.getItem("highScores")) {
         
@@ -162,7 +178,7 @@ var storeScore = function() {
         var highScores = localStorage.getItem("highScores");
         highScores = JSON.parse(highScores);
 
-        // add current score to the array and save only the top 5
+        // add current score to the array
         var myScore = {
                         score: totalScore,
                         initials: playerInitials
@@ -171,7 +187,7 @@ var storeScore = function() {
         highScores.push(myScore);
         // if there are more than 5 scores, sort them in ascending order and remove the first one
         while (highScores.length > 5) {
-            highScores = highScores.sort(function(a , b) {return a.score - b.score}).slice(1, highScores.length - 1);
+            highScores = highScores.sort(function(a , b) {return b.score - a.score}).slice(0, -1);
         };
 
         // regardless of number, sort in descending order
@@ -185,8 +201,12 @@ var storeScore = function() {
 
 
 var endQuiz = function() {
+    // clear timer
+    clearInterval(countdown);
     
-    
+    // update timer to reflect time you ended with
+    document.querySelector("#time").innerText = timeRemaining
+
     // get score
     totalScore = score + timeRemaining;
 
@@ -204,7 +224,7 @@ var endQuiz = function() {
     // create question content div
     var newDivElement = document.createElement("div");
     newDivElement.setAttribute("id","endgame-content");
-    newDivElement.innerHTML = "<p>You answered " + score + " correctly with " + timeRemaining + " seconds remaining, for a score of " + totalScore + ".</p>"
+    newDivElement.innerHTML = "<p>You answered " + (score / correctAnswerValue) + " out of " + quiz.length + " questions correctly with " + timeRemaining + " seconds remaining, for a score of " + totalScore + ".</p>"
 
     // add input and buttons for saving score and initials    
     var newLabelElement = document.createElement("label");
@@ -237,6 +257,9 @@ var endQuiz = function() {
     // add event listener for both buttons
     document.querySelector("#save-initials").addEventListener("click", storeScore);
     document.querySelector("#discard-score").addEventListener("click", leaderboard);
+
+    // view leaderboard when View High Scores is clicked
+    highScoreButton.addEventListener("click", leaderboard);
 };
 
 
@@ -246,13 +269,26 @@ var endQuiz = function() {
 
 // load every question after first one
 var loadNextQuestion = function() {
+    // clear timer temporarily
+    clearInterval(countdown);
+
     // check previous answer before loading next question
     if (event.target.dataset.choice == quiz[questionOrder[0]].answer) {
         var gotItRight = true;
-        score = score + 1;
+        // add point(s) for correct answer
+        score = score + correctAnswerValue;
     } else {
         var gotItRight = false;
+        // deduct time penalty for wrong answer, and stop at 0
+        timeRemaining = Math.max(0, timeRemaining - penalty);
+        document.querySelector("#time").innertext = timeRemaining;
     };
+
+    // check for time remaining
+    if (timeRemaining === 0) {
+        endQuiz();
+        return false;
+    }
     
     // check for remaining questions
     quizAnswered.push(questionOrder[0]);
@@ -296,8 +332,6 @@ var loadNextQuestion = function() {
         popUpFeedback.setAttribute("id","pop-up");
         popUpFeedback.innerHTML = "<p class='incorrect'>That's incorrect! Time deducted.</p>";
         document.getElementById("question-block").appendChild(popUpFeedback);
-
-        // deduct time
     };
 
     // add new answer choices
@@ -310,16 +344,32 @@ var loadNextQuestion = function() {
         answerListElement.appendChild(answerChoiceButton);
     };
 
-    // remove pop-up after X seconds
-    setTimeout(function() {document.querySelector("#pop-up").remove()}, 1500);
+    // remove pop-up after x seconds
+    setTimeout(function() {document.querySelector("#pop-up").remove()}, (popUpTime * 1000));
 
-    // start function over when a new answer is chosen
+    // add listener for answer choices and load next question if time is left
     document.getElementById("answer-list").addEventListener("click", loadNextQuestion);
+
+    // view leaderboard when View High Scores is clicked
+    highScoreButton.addEventListener("click", leaderboard);
+
+    // start timer
+    countdown = setInterval(function() {
+        // decrease time every second
+        timeRemaining = timeRemaining - 1;
+        document.querySelector("#time").innerText = timeRemaining;
+        // if the timer runs out, go to endgame screen
+        if (timeRemaining === 0) {
+            clearInterval(countdown);
+            endQuiz();
+        };
+    }, 1000);
 };
 
 
 // load the first question after Start Game is clicked
 var loadFirstQuestion = function() {    
+    
     // remove start button event listener
     startButtonElement.removeEventListener("click", takeQuiz);
     
@@ -347,12 +397,24 @@ var loadFirstQuestion = function() {
         answerListElement.appendChild(answerChoiceButton);
     };
 
-    // get chosen answer
+    // add listener for answer - if answered before timer hits 0, go to next question
     document.getElementById("answer-list").addEventListener("click", loadNextQuestion);
+
+    // view leaderboard when View High Scores is clicked
+    highScoreButton.addEventListener("click", leaderboard);
+
+    // start timer
+    countdown = setInterval(function() {
+        // decrease time every second
+        timeRemaining = timeRemaining - 1;
+        document.querySelector("#time").innerText = timeRemaining;
+        // if the timer runs out, go to endgame screen
+        if (timeRemaining === 0) {
+            clearInterval(countdown);
+            endQuiz();
+        };
+    }, 1000);
 };
-
-
-
 
 
 
@@ -381,21 +443,20 @@ var takeQuiz = function() {
         questionOrder[i] = parseInt(questionOrder[i]);
     };
 
+    // set timer
+    timeRemaining = timeLimit;
+    document.querySelector("#time").innerText = timeRemaining;
+
+    // display the first question
     loadFirstQuestion();
-
-
-
-
-
-
-
     
 };
 
 
 
 
-
+// set timer on page load
+document.querySelector("#time").innerText = timeLimit;
 
 // start game when Start Quiz button is clicked
 startButtonElement.addEventListener("click", takeQuiz);
