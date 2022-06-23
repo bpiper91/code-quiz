@@ -311,7 +311,7 @@ var loadNextQuestion = function() {
     };
 
     // remove pop-up after X seconds
-    //setTimeout(document.getElementById("pop-up").remove(), 5000);
+    setTimeout(function() {document.querySelector("#pop-up").remove()}, 1500);
 
     // start function over when a new answer is chosen
     document.getElementById("answer-list").addEventListener("click", loadNextQuestion);
