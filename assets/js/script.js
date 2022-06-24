@@ -1,44 +1,44 @@
 // array to store all quiz questions
 var quiz = [
     {
-        question: "The correct answer to this question is answer choice 3",
-        choices: [  "1. answer choice 0",
-                    "2. answer choice 1",
-                    "3. the correct answer",
-                    "4. answer choice 3"    ],
+        question: "Commonly used data types DO NOT include ______.",
+        choices: [  "1. strings",
+                    "2. booleans",
+                    "3. alerts",
+                    "4. numbers"    ],
         answer: 2
       },
       {
-        question: "The correct answer to this question is answer choice 2",
-        choices: [  "1. answer choice 0", 
-                    "2. the correct answer", 
-                    "3. answer choice 2", 
-                    "4. answer choice 3"    ],
-        answer: 1
-      },
-      {
-        question: "The correct answer to this question is answer choice 1",
-        choices: [  "1. the correct answer",
-                    "2. answer choice 1",
-                    "3. answer choice 2",
-                    "4. answer choice 3"    ],
+        question: "The condition in an if / else statement is enclosed within ______.",
+        choices: [  "1. parentheses", 
+                    "2. curly brackets", 
+                    "3. quotes", 
+                    "4. square brackets"    ],
         answer: 0
       },
       {
-        question: "The correct answer to this question is answer choice 4",
-        choices: [  "1. answer choice 0",
-                    "2. answer choice 1",
-                    "3. answer choice 2",
-                    "4. the correct answer"    ],
+        question: "Arrays in JavaScript can be used to store ______.",
+        choices: [  "1. numbers and strings",
+                    "2. other arrays",
+                    "3. booleans",
+                    "4. all of the above"    ],
         answer: 3
       },
       {
-        question: "The correct answer to this question is answer choice 3 (2 of these)",
-        choices: [  "1. answer choice 0",
-                    "2. answer choice 1",
-                    "3. the correct answer",
-                    "4. answer choice 3"    ],
+        question: "String values must be enclosed within ______ when being assigned to variables.",
+        choices: [  "1. commas",
+                    "2. curly brackets",
+                    "3. quotes",
+                    "4. parentheses"    ],
         answer: 2
+      },
+      {
+        question: "A useful tool to print content to the debugger during development and debugging is ______.",
+        choices: [  "1. JavaScript",
+                    "2. terminal / bash",
+                    "3. for loops",
+                    "4. console.log"    ],
+        answer: 3
       }
 ];
 
@@ -152,11 +152,55 @@ var leaderboard = function() {
     startOverButton.innerText = "Start Quiz";
     document.getElementById("question-block").appendChild(startOverButton);
 
-    // add new listener for start over button
+    // add new listener for Start Over button
     startButtonElement = document.querySelector("#start-btn");
     startButtonElement.addEventListener("click", takeQuiz);
-}
 
+    // add buton to clear high scores
+    var clearScoresButton = document.createElement("button");
+    clearScoresButton.className = "score-btn";
+    clearScoresButton.setAttribute("id","clear-scores");
+    clearScoresButton.innerText = "Clear High Scores";
+    document.getElementById("question-block").appendChild(clearScoresButton);
+
+    // add new listener for Clear High Scores button
+    startButtonElement = document.querySelector("#clear-scores");
+    startButtonElement.addEventListener("click", function() {
+        // confirm clearing High scores
+        if (confirm("Are you sure you want to clear the high scores?") == true) {
+            // reset leaderboard
+            highScores = [ {
+                score: 0,
+                initials: ""
+            } ];
+
+            // store empty leaderboard
+            localStorage.setItem("highScores", JSON.stringify(highScores));
+        };
+        
+        // delete leaderboard
+        document.querySelector("#question-content").remove();
+
+        // re-create empty leaderboard
+        var newDivElement = document.createElement("div");
+        newDivElement.setAttribute("id","question-content");
+        
+        var newUnordList = document.createElement("ul");
+        newUnordList.className = "high-scores";
+        
+        var highScores = localStorage.getItem("highScores");
+        highScores = JSON.parse(highScores);
+
+        for (i=0; i < highScores.length; i++) {
+            var newListItem = document.createElement("li");
+            newListItem.className = "high-score";
+            newListItem.innerText = (i + 1) + ". " + highScores[i].score + " - " + highScores[i].initials;
+            newUnordList.appendChild(newListItem);
+        }
+        // append list to question content div
+        newDivElement.appendChild(newUnordList);
+    } );
+};
 
 
 // store saved score and initials and then go to leaderboard
@@ -224,7 +268,11 @@ var endQuiz = function() {
     // create question content div
     var newDivElement = document.createElement("div");
     newDivElement.setAttribute("id","endgame-content");
-    newDivElement.innerHTML = "<p>You answered " + (score / correctAnswerValue) + " out of " + quiz.length + " questions correctly with " + timeRemaining + " seconds remaining, for a score of " + totalScore + ".</p>"
+    if(timeRemaining !== 1) {
+        newDivElement.innerHTML = "<p>You answered " + (score / correctAnswerValue) + " out of " + quiz.length + " questions correctly with " + timeRemaining + " seconds remaining, for a score of " + totalScore + ".</p>"
+    } else {
+        newDivElement.innerHTML = "<p>You answered " + (score / correctAnswerValue) + " out of " + quiz.length + " questions correctly with 1 second remaining, for a score of " + totalScore + ".</p>"
+    };
 
     // add input and buttons for saving score and initials    
     var newLabelElement = document.createElement("label");

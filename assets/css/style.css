@@ -33,6 +33,10 @@ header h1 {
     font-size: 30px;
 }
 
+.timer {
+    text-align: center;
+}
+
 .high-score-btn {
     background: var(--blue);
     padding: 6px 12px;
@@ -43,8 +47,12 @@ header h1 {
     font-size: 18px;
 }
 
-.high-score-btn:hover, .start-btn:hover, .answer-choice:hover {
+.start-btn:hover, .answer-choice:hover .score-btn:hover {
     background: var(--orange);
+}
+
+.high-score-btn:hover {
+    background: var(--green);
 }
 
 /* END HEADER STYLING */
@@ -81,7 +89,7 @@ h2 {
     padding: 10px;
 }
 
-.start-btn, .answer-choice {
+.start-btn, .answer-choice, .score-btn {
     margin: 20px;
     padding: 6px 12px;
     color: #222;
@@ -90,6 +98,10 @@ h2 {
     background: var(--blue);
     outline: none;
     border: none;
+}
+
+#save-initials:hover {
+    background: var(--green);
 }
 
 .answer-list {
