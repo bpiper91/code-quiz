@@ -55,7 +55,7 @@ var timeValue = 1;
 // starting time limit for finishing quiz
 var timeLimit = 60;
 // penalty for wrong answer (seconds)
-var penalty = 15;
+var penalty = 10;
 // amount of time a pop-up stays on screen (seconds)
 var popUpTime = 0.8
 
@@ -79,7 +79,11 @@ var countdown; // does this need to be here?
 
 // view high scores
 var leaderboard = function() {
-    
+    // check for start button (if jumping from initial screen to leaderboard)
+    if (startButtonElement) {
+        startButtonElement.remove();
+    };
+
     // clear timer
     clearInterval(countdown);
 
@@ -93,6 +97,7 @@ var leaderboard = function() {
  
     // clear question content div
     questionContentElement.innerHTML = "";
+    questionContentElement.setAttribute("class","question-content");
 
     // check for pop-up
     if (document.querySelector("#pop-up")) {
@@ -123,7 +128,7 @@ var leaderboard = function() {
     startOverButton.className = "start-btn";
     startOverButton.setAttribute("id","start-btn");
     startOverButton.innerText = "Start Quiz";
-    questionContentElement.appendChild(startOverButton);
+    questionBlockElement.appendChild(startOverButton);
 
     // add new listener for Start Over button
     startButtonElement = document.querySelector("#start-btn");
@@ -224,6 +229,7 @@ var endQuiz = function() {
     };
     questionContentElement.removeEventListener("click", loadNextQuestion);
     questionContentElement.innerHTML = "";
+    questionContentElement.setAttribute("class","question-content");
 
     // change heading text
     questionTextElement.innerText = "All done!"
@@ -281,11 +287,11 @@ var loadNextQuestion = function() {
 
     // check previous answer before loading next question
     if (event.target.dataset.choice == quiz[questionOrder[0]].answer) {
-        var gotItRight = true;
+        gotItRight = true;
         // add point(s) for correct answer
         score = score + 1;
     } else {
-        var gotItRight = false;
+        gotItRight = false;
         // deduct time penalty for wrong answer, and stop at 0
         timeRemaining = Math.max(0, timeRemaining - penalty);
         timer.innertext = timeRemaining;
@@ -316,6 +322,7 @@ var loadNextQuestion = function() {
 
     // remove previous question answer choices
     questionContentElement.innerHTML = "";
+    questionContentElement.setAttribute("class","question-content answer-list");
 
     // check previous answer and provide feedback
     if (gotItRight) {
@@ -377,6 +384,7 @@ var loadFirstQuestion = function() {
     // remove instructions and start button
     startButtonElement.remove();
     questionContentElement.innerHTML = "";
+    questionContentElement.setAttribute("class","question-content answer-list")
     
     // change heading text to question text
     questionTextElement.innerText = quiz[questionOrder[0]].question;
