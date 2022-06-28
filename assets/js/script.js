@@ -138,9 +138,6 @@ var loadFirstQuestion = function() {
     // add listener for answer - if answered before timer hits 0, go to next question
     questionContentElement.addEventListener("click", loadNextQuestion);
 
-    // view leaderboard when View High Scores is clicked
-    // highScoreButton.addEventListener("click", leaderboard);
-
     // start timer
     countdown = setInterval(function() {
         // decrease time every second
@@ -156,6 +153,11 @@ var loadFirstQuestion = function() {
 
 // load question (subsequent questions from 2 to n)
 var loadNextQuestion = function() {
+    if (!event.target.dataset.choice) {
+        return false;
+        questionContentElement.addEventListener("click", loadNextQuestion);
+    };
+    
     // clear timer temporarily
     clearInterval(countdown);
 
@@ -164,7 +166,7 @@ var loadNextQuestion = function() {
         gotItRight = true;
         // add point(s) for correct answer
         score = score + 1;
-    } else {
+    } else  {
         gotItRight = false;
         // deduct time penalty for wrong answer, and stop at 0
         timeRemaining = Math.max(0, timeRemaining - penalty);
@@ -232,9 +234,6 @@ var loadNextQuestion = function() {
     // add listener for answer choices and load next question if time is left
     questionContentElement.addEventListener("click", loadNextQuestion);
 
-    // view leaderboard when View High Scores is clicked
-    // highScoreButton.addEventListener("click", leaderboard);
-
     // start timer
     countdown = setInterval(function() {
         // decrease time every second
@@ -277,6 +276,8 @@ var endQuiz = function() {
         questionContentElement.innerHTML = "<p>You answered " + score + " out of " + quiz.length + " questions correctly with 1 second remaining, for a score of " + totalScore + ".</p>"
     };
 
+    // add endgame styling to question content div
+    questionContentElement.setAttribute("class","question-content endgame");
 
     // add input and buttons for saving score and initials    
     var newLabelElement = document.createElement("label");
@@ -292,7 +293,7 @@ var endQuiz = function() {
     questionContentElement.appendChild(newInputElement);
 
     var saveScoreButton = document.createElement("button");
-    saveScoreButton.className = "score-btn";
+    saveScoreButton.className = "score-btn green-hover";
     saveScoreButton.setAttribute("id","save-initials");
     saveScoreButton.innerText = "Save Score";
     questionContentElement.appendChild(saveScoreButton);
@@ -414,7 +415,7 @@ var leaderboard = function() {
 
     // add button to start quiz
     var startOverButton = document.createElement("button");
-    startOverButton.className = "start-btn";
+    startOverButton.className = "start-btn green-hover";
     startOverButton.setAttribute("id","start-btn");
     startOverButton.innerText = "Start Quiz";
     buttonDiv.appendChild(startOverButton);
