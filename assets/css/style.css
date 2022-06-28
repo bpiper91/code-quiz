@@ -181,6 +181,14 @@ h2 {
     }
     
     .green-hover {
+        background: var(--green);
+    }
+
+    .high-score-btn {
+        background: var(--orange);
+    }
+    
+    .high-score-btn:hover {
         background: var(--orange);
     }
 }

@@ -76,6 +76,11 @@ var countdown;
 // QUIZ FUNCTIONS
 // start Quiz
 var takeQuiz = function() {
+    // if coming from leaderboard screen, re-add high scores listener
+    if (event.target.dataset.origin == "start-over") {
+        highScoreButton.addEventListener("click", leaderboard);
+    };
+    
     // empty arrays and reset variables (necessary after 1st time taking quiz)
     questionOrder.length = 0;
     quizAnswered.length = 0;
@@ -356,6 +361,9 @@ var leaderboard = function() {
         startButtonElement.remove();
     };
 
+    // remove listener to load leaderboard
+    highScoreButton.removeEventListener("click", leaderboard);
+
     // clear timer
     clearInterval(countdown);
 
@@ -417,6 +425,7 @@ var leaderboard = function() {
     var startOverButton = document.createElement("button");
     startOverButton.className = "start-btn green-hover";
     startOverButton.setAttribute("id","start-btn");
+    startOverButton.setAttribute("data-origin","start-over");
     startOverButton.innerText = "Start Quiz";
     buttonDiv.appendChild(startOverButton);
 
@@ -454,6 +463,7 @@ var leaderboard = function() {
         startOverButton.className = "start-btn";
         startOverButton.setAttribute("id","start-btn");
         startOverButton.innerText = "Start Quiz";
+        startOverButton.setAttribute("data-origin","start-over");
         questionContentElement.appendChild(startOverButton);
 
     // add new listener for Start Over button
