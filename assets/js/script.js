@@ -106,7 +106,7 @@ var leaderboard = function() {
     
     // get high scores from localStorage and compile to list in descending order
     if (!localStorage.getItem("highScores")) {
-        questionContentElement.innerHTML = "<p>There are no high scores to display.</p>";
+        questionContentElement.innerHTML = "<p>There are no high scores to display. Take the quiz to set a new high score!</p>";
     } else {
         var newUnordList = document.createElement("ul");
         newUnordList.className = "high-scores";
@@ -114,32 +114,50 @@ var leaderboard = function() {
         var highScores = localStorage.getItem("highScores");
         highScores = JSON.parse(highScores);
 
-        for (i=0; i < highScores.length; i++) {
-            var newListItem = document.createElement("li");
-            newListItem.className = "high-score";
-            newListItem.innerText = (i + 1) + ". " + highScores[i].score + " - " + highScores[i].initials;
-            newUnordList.appendChild(newListItem);
-        }
-        // append list to question content div
-        questionContentElement.appendChild(newUnordList);
+        // if there are multiple scores, but one is blank, delete the blank score
+        if (highScores.length > 1 && highScores[highScores.length - 1].score === 0 && highScores[highScores.length - 1].initials === "") {
+            highScores.splice(highScores.length - 1, 1);
+        };
+
+        // if there's only one score, and it's blank, don't display it
+        if (highScores.length === 1 && highScores[0].score == 0 && highScores[0].initials == "") {
+            questionContentElement.innerHTML = "<p>There are no high scores to display. Take the quiz to set a new high score!</p>";
+        } else {
+            // display high scores as list
+            for (i=0; i < highScores.length; i++) {
+                var newListItem = document.createElement("li");
+                newListItem.className = "high-score";
+                newListItem.innerText = (i + 1) + ". " + highScores[i].score + " - " + highScores[i].initials;
+                newUnordList.appendChild(newListItem);
+            };
+
+            // append list to question content div
+            questionContentElement.appendChild(newUnordList);
+        };
     };
 
+    // create buttons
+    var buttonDiv = document.createElement("div");
+    buttonDiv.setAttribute("class","buttons");
+    questionBlockElement.appendChild(buttonDiv);
+
+    // add button to start quiz
     var startOverButton = document.createElement("button");
     startOverButton.className = "start-btn";
     startOverButton.setAttribute("id","start-btn");
     startOverButton.innerText = "Start Quiz";
-    questionBlockElement.appendChild(startOverButton);
-
-    // add new listener for Start Over button
-    startButtonElement = document.querySelector("#start-btn");
-    startButtonElement.addEventListener("click", takeQuiz);
+    buttonDiv.appendChild(startOverButton);
 
     // add button to clear high scores
     var clearScoresButton = document.createElement("button");
     clearScoresButton.className = "score-btn";
     clearScoresButton.setAttribute("id","clear-scores");
     clearScoresButton.innerText = "Clear High Scores";
-    questionContentElement.appendChild(clearScoresButton);
+    buttonDiv.appendChild(clearScoresButton);
+
+    // add new listener for Start Over button
+    startButtonElement = document.querySelector("#start-btn");
+    startButtonElement.addEventListener("click", takeQuiz);
 
     // add new listener for Clear High Scores button
     startButtonElement = document.querySelector("#clear-scores");
@@ -156,8 +174,9 @@ var leaderboard = function() {
             localStorage.setItem("highScores", JSON.stringify(highScores));
         };
         
-        // clear quetion content div
+        // clear leaderboard and buttons
         questionContentElement.innerHTML = "<p>The high scores have been reset. Start the quiz to set a new high score!</p>";
+        document.querySelector(".buttons").remove();
 
         var startOverButton = document.createElement("button");
         startOverButton.className = "start-btn";
@@ -382,9 +401,13 @@ var loadFirstQuestion = function() {
     startButtonElement.removeEventListener("click", takeQuiz);
     
     // remove instructions and start button
-    startButtonElement.remove();
+    document.querySelector("#start-btn").remove();
     questionContentElement.innerHTML = "";
-    questionContentElement.setAttribute("class","question-content answer-list")
+    questionContentElement.setAttribute("class","question-content answer-list");
+
+    if (document.querySelector(".buttons")) {
+        document.querySelector(".buttons").remove();
+    };
     
     // change heading text to question text
     questionTextElement.innerText = quiz[questionOrder[0]].question;
